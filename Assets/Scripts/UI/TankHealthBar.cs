@@ -9,7 +9,6 @@ public class TankHealthBar : MonoBehaviour
     [SerializeField] private Slider slider;
     [SerializeField] private TMP_Text healthText;
 
-    // Додаткове завдання ⭐
     [Header("Extra")]
     [SerializeField] private Image fillImage;
     [SerializeField] private Color fullColor = new Color(0.25f, 0.85f, 0.3f);

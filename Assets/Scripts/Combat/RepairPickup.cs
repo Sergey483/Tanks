@@ -1,6 +1,5 @@
 using UnityEngine;
 
-// Додаткове завдання ⭐: ремонтний бонус, який викликає RestoreHealth.
 [RequireComponent(typeof(Collider))]
 public class RepairPickup : MonoBehaviour
 {

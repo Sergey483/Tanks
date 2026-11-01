@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 
-// Додаткове завдання ⭐: коротке миготіння матеріалу танка після отримання шкоди.
 [RequireComponent(typeof(TankHealth))]
 public class DamageFlash : MonoBehaviour
 {
