@@ -1,0 +1,2 @@
+# TextMesh Pro is third-party Unity code: exclude it from GitHub language stats
+Assets/TextMesh?Pro/** linguist-vendored
