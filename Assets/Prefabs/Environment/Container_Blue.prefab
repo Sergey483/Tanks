@@ -1042,6 +1042,7 @@ GameObject:
   m_Component:
   - component: {fileID: 583574842551261820}
   - component: {fileID: 4076066895393772414}
+  - component: {fileID: 5088204395353634915}
   m_Layer: 0
   m_Name: Container_Blue
   m_TagString: Untagged
@@ -1102,6 +1103,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.5, y: 2.6, z: 6}
   m_Center: {x: 0, y: 1.3, z: 0}
+--- !u!114 &5088204395353634915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6461228697645182030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36c1aa756d9a3184983a7664e107d0c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  surfaceType: 1
 --- !u!1 &6692636281450319124
 GameObject:
   m_ObjectHideFlags: 0

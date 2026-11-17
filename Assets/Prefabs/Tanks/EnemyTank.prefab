@@ -220,6 +220,7 @@ GameObject:
   - component: {fileID: 6658234474087712699}
   - component: {fileID: 6030620123694638513}
   - component: {fileID: 7083943768613950846}
+  - component: {fileID: 3912555095742301190}
   - component: {fileID: 1905547282083838586}
   - component: {fileID: 2940666813503668448}
   - component: {fileID: 7036482857838886660}
@@ -416,6 +417,9 @@ MonoBehaviour:
   muzzleFlash: {fileID: 518474660835703550}
   audioSource: {fileID: 6658234474087712699}
   shootClip: {fileID: 8300000, guid: f5cfbd50b3737f84aae27a039859e7b2, type: 3}
+  pitchRange: {x: 0.95, y: 1.05}
+  shakeStrength: 0.15
+  shakeDuration: 0.15
 --- !u!114 &7083943768613950846
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -430,6 +434,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   currentHealth: 100
+--- !u!114 &3912555095742301190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3077558464927501162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36c1aa756d9a3184983a7664e107d0c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  surfaceType: 1
 --- !u!114 &1905547282083838586
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -500,6 +517,8 @@ MonoBehaviour:
   attackRange: 10
   loseRange: 24
   pointReachDistance: 1
+  minPatrolWait: 0.5
+  maxPatrolWait: 2
   turretRotationSpeed: 90
   shootAngle: 5
   aimHeight: 0.8

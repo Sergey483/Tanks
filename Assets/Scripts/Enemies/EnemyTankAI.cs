@@ -24,6 +24,8 @@ public class EnemyTankAI : MonoBehaviour
 
     [Header("Patrol")]
     [SerializeField, Min(0f)] private float pointReachDistance = 1f;
+    [SerializeField, Min(0f)] private float minPatrolWait = 0.5f;
+    [SerializeField, Min(0f)] private float maxPatrolWait = 2f;
 
     [Header("Aiming")]
     [SerializeField, Min(0f)] private float turretRotationSpeed = 90f;
@@ -37,6 +39,7 @@ public class EnemyTankAI : MonoBehaviour
     private State currentState;
     private int patrolPointIndex;
     private float nextPathUpdateTime;
+    private float waitUntil = -1f;
 
     private void Awake()
     {
@@ -105,6 +108,7 @@ public class EnemyTankAI : MonoBehaviour
         if (currentState == State.Patrol)
         {
             agent.isStopped = false;
+            waitUntil = -1f;
             SetPatrolDestination();
         }
         else if (currentState == State.Chase)
@@ -124,14 +128,27 @@ public class EnemyTankAI : MonoBehaviour
         if (patrolPoints == null || patrolPoints.Length == 0)
             return;
 
-        if (!agent.pathPending &&
-            agent.remainingDistance <= pointReachDistance)
+        if (agent.pathPending ||
+            agent.remainingDistance > pointReachDistance)
         {
-            patrolPointIndex =
-                (patrolPointIndex + 1) % patrolPoints.Length;
-
-            SetPatrolDestination();
+            return;
         }
+
+        // Випадкове очікування на патрульній точці.
+        if (waitUntil < 0f)
+        {
+            waitUntil = Time.time + Random.Range(minPatrolWait, maxPatrolWait);
+            return;
+        }
+
+        if (Time.time < waitUntil)
+            return;
+
+        waitUntil = -1f;
+        patrolPointIndex =
+            (patrolPointIndex + 1) % patrolPoints.Length;
+
+        SetPatrolDestination();
     }
 
     private void SetPatrolDestination()
@@ -224,6 +241,19 @@ public class EnemyTankAI : MonoBehaviour
         );
 
         return angle <= shootAngle;
+    }
+
+    // Колір поточного стану над танком: зелений — патруль, жовтий — переслідування, червоний — атака.
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = currentState switch
+        {
+            State.Chase => Color.yellow,
+            State.Attack => Color.red,
+            _ => Color.green
+        };
+
+        Gizmos.DrawSphere(transform.position + Vector3.up * 3f, 0.35f);
     }
 
     private void OnDrawGizmosSelected()

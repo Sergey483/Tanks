@@ -120,6 +120,7 @@ public static class TanksSceneBuilder
         AudioClip impactClip = MakeClip("Impact", 0.4f, ImpactSample);
         AudioClip explosionClip = MakeClip("Explosion", 1.6f, ExplosionSample);
         AudioClip engineClip = MakeClip("EngineLoop", 1f, EngineSample);
+        AudioClip metalClip = MakeClip("ImpactMetal", 0.6f, MetalSample);
 
         // Матеріали URP/Lit: оточення менш контрастне, танки — помітні.
         Texture2D groundTexture = MakeGroundTexture();
@@ -161,20 +162,27 @@ public static class TanksSceneBuilder
             "TankExplosion", particleMat, explosionClip, 3f,
             new Color(1f, 0.45f, 0.1f), 40, 60, 4f, 10f, 0.6f, 1.6f, 0.8f);
 
+        // Окремий ефект для металу: дрібні яскраві іскри та дзвінкий звук.
+        ImpactEffect metalImpactPrefab = MakeEffectPrefab(
+            "ImpactMetal", particleMat, metalClip, 1.5f,
+            new Color(0.75f, 0.9f, 1f), 18, 30, 5f, 9f, 0.05f, 0.14f, 0.25f);
+
         Material heavyProjectileMat = MakeMaterial("ProjectileHeavy", new Color(1f, 0.35f, 0.15f), 0.5f);
         heavyProjectileMat.EnableKeyword("_EMISSION");
         heavyProjectileMat.SetColor("_EmissionColor", new Color(1f, 0.25f, 0.05f) * 3f);
 
         // Дві візуально різні кулі: звичайна жовта та важка червона з великим вибухом.
-        Projectile projectilePrefab = MakeProjectilePrefab("Projectile", projectileMat, trailMat, impactPrefab,
+        Projectile projectilePrefab = MakeProjectilePrefab("Projectile", projectileMat, trailMat, impactPrefab, metalImpactPrefab,
             new Color(1f, 0.95f, 0.3f), new Color(1f, 0.5f, 0.1f), 0.12f);
-        Projectile heavyProjectilePrefab = MakeProjectilePrefab("ProjectileHeavy", heavyProjectileMat, trailMat, explosionPrefab,
+        Projectile heavyProjectilePrefab = MakeProjectilePrefab("ProjectileHeavy", heavyProjectileMat, trailMat, explosionPrefab, null,
             new Color(1f, 0.45f, 0.2f), new Color(0.6f, 0.1f, 0.05f), 0.3f);
 
         TankConfig playerConfig = MakeConfig("PlayerTankConfig", "Стандартна гармата", 25, 18f, 0.7f, 5f, projectilePrefab, 1f, 0);
         TankConfig rapidConfig = MakeConfig("RapidTankConfig", "Скорострільна гармата", 10, 24f, 0.25f, 4f, projectilePrefab, 0.7f, 4);
         TankConfig heavyConfig = MakeConfig("HeavyTankConfig", "Важка гармата", 50, 14f, 1.6f, 5f, heavyProjectilePrefab, 1.6f, 1);
         TankConfig enemyConfig = MakeConfig("EnemyTankConfig", "Ворожа гармата", 10, 16f, 1.2f, 5f, projectilePrefab, 1f, 0);
+        TankConfig enemyRapidConfig = MakeConfig("EnemyRapidConfig", "Ворожа скорострільна", 6, 22f, 0.5f, 4f, projectilePrefab, 0.7f, 0);
+        TankConfig enemyHeavyConfig = MakeConfig("EnemyHeavyConfig", "Ворожа важка", 20, 14f, 2f, 5f, heavyProjectilePrefab, 1.3f, 0);
 
         GameObject playerPrefab = MakeTankPrefab(
             "PlayerTank", false, playerMat, playerTurretMat, particleMat, shootClip, engineClip,
@@ -288,8 +296,11 @@ public static class TanksSceneBuilder
             new Vector3(-4f, 0f, 20f), new Vector3(4f, 0f, 20f), new Vector3(4f, 0f, 9f), new Vector3(-1f, 0f, 9f)
         });
 
-        MakeEnemy(enemyPrefab, "EnemyTank_West", MakeMarker(spawnGroup, "EnemySpawn_West", new Vector3(-12f, 0f, 14f)).position, player.transform, routeWest);
-        MakeEnemy(enemyPrefab, "EnemyTank_East", MakeMarker(spawnGroup, "EnemySpawn_East", new Vector3(12f, 0f, 14f)).position, player.transform, routeEast);
+        // Вороги з різними швидкостями, дистанціями та конфігами зброї.
+        GameObject westEnemy = MakeEnemy(enemyPrefab, "EnemyTank_Fast_West", MakeMarker(spawnGroup, "EnemySpawn_West", new Vector3(-12f, 0f, 14f)).position, player.transform, routeWest);
+        TuneEnemy(westEnemy, 5f, 14f, 8f, 20f, enemyRapidConfig);
+        GameObject eastEnemy = MakeEnemy(enemyPrefab, "EnemyTank_Heavy_East", MakeMarker(spawnGroup, "EnemySpawn_East", new Vector3(12f, 0f, 14f)).position, player.transform, routeEast);
+        TuneEnemy(eastEnemy, 2.5f, 20f, 13f, 27f, enemyHeavyConfig);
         MakeEnemy(enemyPrefab, "EnemyTank_Center", MakeMarker(spawnGroup, "EnemySpawn_Center", new Vector3(0f, 0f, 20f)).position, player.transform, routeCenter);
 
         Transform pickups = Group(level, "Pickups");
@@ -355,6 +366,7 @@ public static class TanksSceneBuilder
 
         CameraFollow follow = mainCamera.gameObject.AddComponent<CameraFollow>();
         SetField(follow, "target", player.transform);
+        mainCamera.gameObject.AddComponent<CameraShake>();
         mainCamera.transform.position = player.transform.position + new Vector3(0f, 12f, -8f);
         mainCamera.transform.LookAt(player.transform);
 
@@ -481,6 +493,13 @@ public static class TanksSceneBuilder
             target.transform.localScale = new Vector3(1.5f, 2f, 1.5f);
             target.GetComponent<Renderer>().sharedMaterial = targetMat;
             target.AddComponent<TestTarget>();
+
+            // Половина мішеней металева — для перевірки різних ефектів влучання.
+            if (i >= 3)
+            {
+                target.AddComponent<ImpactSurface>();
+                target.name += "_Metal";
+            }
         }
 
         GameObject player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
@@ -499,6 +518,7 @@ public static class TanksSceneBuilder
         camera.GetUniversalAdditionalCameraData().renderPostProcessing = true;
         CameraFollow follow = camera.gameObject.AddComponent<CameraFollow>();
         SetField(follow, "target", player.transform);
+        camera.gameObject.AddComponent<CameraShake>();
 
         EditorSceneManager.SaveScene(scene, "Assets/Scenes/TestRange.unity");
         Debug.Log("[TanksSceneBuilder] Test range built");
@@ -592,6 +612,8 @@ public static class TanksSceneBuilder
         SetField(health, "maxHealth", 100);
         SetField(health, "currentHealth", 100);
 
+        root.AddComponent<ImpactSurface>();
+
         TankDeath death = root.AddComponent<TankDeath>();
         SetField(death, "explosionPrefab", explosionPrefab);
 
@@ -658,7 +680,17 @@ public static class TanksSceneBuilder
         return part;
     }
 
-    private static void MakeEnemy(GameObject prefab, string name, Vector3 position, Transform player, Transform route)
+    private static void TuneEnemy(GameObject enemy, float speed, float detectionRange, float attackRange, float loseRange, TankConfig config)
+    {
+        SetField(enemy.GetComponent<NavMeshAgent>(), "m_Speed", speed);
+        EnemyTankAI ai = enemy.GetComponent<EnemyTankAI>();
+        SetField(ai, "detectionRange", detectionRange);
+        SetField(ai, "attackRange", attackRange);
+        SetField(ai, "loseRange", loseRange);
+        SetField(enemy.GetComponent<TankShooter>(), "config", config);
+    }
+
+    private static GameObject MakeEnemy(GameObject prefab, string name, Vector3 position, Transform player, Transform route)
     {
         GameObject enemy = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
         enemy.name = name;
@@ -672,6 +704,7 @@ public static class TanksSceneBuilder
             points[i] = route.GetChild(i);
 
         SetObjectArray(ai, "patrolPoints", points);
+        return enemy;
     }
 
     private static Transform MakePatrolRoute(Transform parent, string name, Vector3[] points)
@@ -738,6 +771,7 @@ public static class TanksSceneBuilder
         }
         MakePart(PrimitiveType.Cube, "Frame_Top", root.transform, new Vector3(0f, 2.58f, 0f), new Vector3(2.5f, 0.1f, 6f), frameMat);
         MakePart(PrimitiveType.Cube, "Frame_Bottom", root.transform, new Vector3(0f, 0.05f, 0f), new Vector3(2.5f, 0.1f, 6f), frameMat);
+        root.AddComponent<ImpactSurface>();
         MakeStatic(root);
         return SavePrefab(root, "Assets/Prefabs/Environment/" + name + ".prefab");
     }
@@ -771,6 +805,7 @@ public static class TanksSceneBuilder
             MakePart(PrimitiveType.Cylinder, "Rim_" + i, root.transform, spots[i] + Vector3.up * 0.88f, new Vector3(0.78f, 0.02f, 0.78f), rimMat)
                 .GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
         }
+        root.AddComponent<ImpactSurface>();
         MakeStatic(root);
         return SavePrefab(root, "Assets/Prefabs/Environment/Barrels.prefab");
     }
@@ -1027,7 +1062,7 @@ public static class TanksSceneBuilder
     // ---------- Projectile & VFX ----------
 
     private static Projectile MakeProjectilePrefab(string name, Material material, Material trailMat, ImpactEffect impactPrefab,
-        Color trailStart, Color trailEnd, float trailWidth)
+        ImpactEffect metalImpactPrefab, Color trailStart, Color trailEnd, float trailWidth)
     {
         GameObject shell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         shell.name = name;
@@ -1058,6 +1093,8 @@ public static class TanksSceneBuilder
 
         Projectile projectile = shell.AddComponent<Projectile>();
         SetField(projectile, "impactEffectPrefab", impactPrefab);
+        if (metalImpactPrefab != null)
+            SetField(projectile, "metalImpactEffectPrefab", metalImpactPrefab);
 
         return SavePrefab(shell, "Assets/Prefabs/Projectiles/" + name + ".prefab").GetComponent<Projectile>();
     }
@@ -1652,6 +1689,16 @@ public static class TanksSceneBuilder
         float boom = Mathf.Sin(2f * Mathf.PI * 70f * t) * Mathf.Exp(-t * 14f);
         float crack = LowNoise(random, 0.5f) * Mathf.Exp(-t * 30f);
         return (boom * 0.7f + crack * 1.6f) * 0.8f;
+    }
+
+    private static float MetalSample(float t, System.Random random)
+    {
+        // Дзвінкий удар по металу: кілька негармонійних обертонів.
+        float ring = Mathf.Sin(2f * Mathf.PI * 820f * t) * 0.5f
+                     + Mathf.Sin(2f * Mathf.PI * 1370f * t) * 0.3f
+                     + Mathf.Sin(2f * Mathf.PI * 2210f * t) * 0.2f;
+        float hit = LowNoise(random, 0.7f) * Mathf.Exp(-t * 60f);
+        return (ring * Mathf.Exp(-t * 9f) + hit * 1.5f) * 0.6f;
     }
 
     private static float ImpactSample(float t, System.Random random)

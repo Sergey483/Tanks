@@ -4,6 +4,7 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     [SerializeField] private ImpactEffect impactEffectPrefab;
+    [SerializeField] private ImpactEffect metalImpactEffectPrefab;
 
     private Rigidbody projectileRigidbody;
     private int damage;
@@ -64,7 +65,15 @@ public class Projectile : MonoBehaviour
 
     private void CreateImpactEffect(Collision collision)
     {
-        if (impactEffectPrefab == null ||
+        ImpactSurface surface = collision.collider.GetComponentInParent<ImpactSurface>();
+        bool isMetal = surface != null && surface.Type == ImpactSurface.SurfaceType.Metal;
+
+        // Для металу — іскри, для ґрунту та бетону — звичайний ефект.
+        ImpactEffect effect = isMetal && metalImpactEffectPrefab != null
+            ? metalImpactEffectPrefab
+            : impactEffectPrefab;
+
+        if (effect == null ||
             collision.contactCount == 0)
         {
             return;
@@ -73,7 +82,7 @@ public class Projectile : MonoBehaviour
         ContactPoint contact = collision.GetContact(0);
 
         Instantiate(
-            impactEffectPrefab,
+            effect,
             contact.point,
             Quaternion.LookRotation(contact.normal)
         );

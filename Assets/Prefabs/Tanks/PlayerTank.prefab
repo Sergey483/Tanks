@@ -100,6 +100,7 @@ GameObject:
   - component: {fileID: 500943928201093682}
   - component: {fileID: 5126565701417067582}
   - component: {fileID: 7308316693868356834}
+  - component: {fileID: 5149243826968220365}
   - component: {fileID: 3647309554262987086}
   - component: {fileID: 1732275988462617474}
   - component: {fileID: 4414925655212580922}
@@ -297,6 +298,9 @@ MonoBehaviour:
   muzzleFlash: {fileID: 6030344971401906193}
   audioSource: {fileID: 500943928201093682}
   shootClip: {fileID: 8300000, guid: f5cfbd50b3737f84aae27a039859e7b2, type: 3}
+  pitchRange: {x: 0.95, y: 1.05}
+  shakeStrength: 0.15
+  shakeDuration: 0.15
 --- !u!114 &7308316693868356834
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -311,6 +315,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   currentHealth: 100
+--- !u!114 &5149243826968220365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2107450576137575063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36c1aa756d9a3184983a7664e107d0c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  surfaceType: 1
 --- !u!114 &3647309554262987086
 MonoBehaviour:
   m_ObjectHideFlags: 0
