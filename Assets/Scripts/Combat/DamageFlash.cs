@@ -7,7 +7,7 @@ public class DamageFlash : MonoBehaviour
     [SerializeField] private Color flashColor = Color.white;
     [SerializeField, Min(0.01f)] private float flashDuration = 0.1f;
 
-    private static readonly int ColorId = Shader.PropertyToID("_Color");
+    private static readonly int ColorId = Shader.PropertyToID("_BaseColor");
 
     private TankHealth health;
     private Renderer[] tankRenderers;

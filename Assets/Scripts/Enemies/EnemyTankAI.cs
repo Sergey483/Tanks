@@ -159,8 +159,24 @@ public class EnemyTankAI : MonoBehaviour
         agent.isStopped = true;
         AimAtPlayer();
 
-        if (IsAimedAtPlayer() && shooter != null)
+        if (IsAimedAtPlayer() && HasLineOfSight() && shooter != null)
             shooter.TryShoot();
+    }
+
+    private bool HasLineOfSight()
+    {
+        Vector3 origin = turretPivot.position;
+        Vector3 target = player.position + Vector3.up * aimHeight;
+        Vector3 direction = (target - origin).normalized;
+        float distance = Vector3.Distance(origin, target);
+
+        if (Physics.Raycast(origin, direction, out RaycastHit hit, distance, ~0, QueryTriggerInteraction.Ignore))
+        {
+            // Якщо між ворогом і гравцем є перешкода — немає видимості
+            return hit.transform.root == player.root;
+        }
+
+        return true;
     }
 
     private void AimAtPlayer()
