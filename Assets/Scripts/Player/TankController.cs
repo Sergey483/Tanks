@@ -8,6 +8,7 @@ public class TankController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
     [SerializeField] private float rotationSpeed = 100f;
+    [SerializeField, Range(0.1f, 1f)] private float reverseSpeedMultiplier = 0.6f;
 
     [Header("Acceleration")]
     [SerializeField] private float acceleration = 3f;
@@ -25,6 +26,7 @@ public class TankController : MonoBehaviour
     private float currentMoveInput;
     private float currentTurnInput;
     private Vector3 previousMousePosition;
+    private bool isMoving;
 
     private void Awake()
     {
@@ -53,6 +55,17 @@ public class TankController : MonoBehaviour
     {
         SmoothInput();
         MoveAndRotate();
+        ReportMovementChange();
+    }
+
+    private void ReportMovementChange()
+    {
+        bool movingNow = Mathf.Abs(currentMoveInput) > 0.01f || Mathf.Abs(currentTurnInput) > 0.01f;
+        if (movingNow == isMoving)
+            return;
+
+        isMoving = movingNow;
+        Debug.Log(isMoving ? "Танк почав рух" : "Танк зупинився");
     }
 
     private void SmoothInput()
@@ -89,11 +102,16 @@ public class TankController : MonoBehaviour
         Vector3 moveDirection =
             nextRotation * Vector3.forward;
 
+        // Назад танк їде повільніше, ніж уперед.
+        float speed = currentMoveInput < 0f
+            ? moveSpeed * reverseSpeedMultiplier
+            : moveSpeed;
+
         Vector3 nextPosition =
             tankRigidbody.position +
             moveDirection *
             currentMoveInput *
-            moveSpeed *
+            speed *
             Time.fixedDeltaTime;
 
         tankRigidbody.MoveRotation(nextRotation);
@@ -102,8 +120,11 @@ public class TankController : MonoBehaviour
 
     private void ReadMovementInput()
     {
-        targetMoveInput = GetButtonAxis(KeyCode.DownArrow, KeyCode.UpArrow);
-        targetTurnInput = GetButtonAxis(KeyCode.LeftArrow, KeyCode.RightArrow);
+        // Стрілки або W/S/A/D.
+        targetMoveInput = Mathf.Clamp(
+            GetButtonAxis(KeyCode.DownArrow, KeyCode.UpArrow) + GetButtonAxis(KeyCode.S, KeyCode.W), -1f, 1f);
+        targetTurnInput = Mathf.Clamp(
+            GetButtonAxis(KeyCode.LeftArrow, KeyCode.RightArrow) + GetButtonAxis(KeyCode.A, KeyCode.D), -1f, 1f);
     }
 
     private static float GetButtonAxis(KeyCode negativeKey, KeyCode positiveKey)

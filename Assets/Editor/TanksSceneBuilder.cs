@@ -548,6 +548,11 @@ public static class TanksSceneBuilder
         GameObject hull = MakePart(PrimitiveType.Cube, "Body", root.transform, new Vector3(0f, 0.5f, 0f), new Vector3(2f, 0.8f, 3f), bodyMat);
         hull.layer = tankLayer;
 
+        // Дві візуальні гусениці.
+        Material trackMat = MakeMaterial("Track", new Color(0.12f, 0.12f, 0.12f), 0.2f, 0.4f);
+        MakePart(PrimitiveType.Cube, "Track_Left", root.transform, new Vector3(-1.1f, 0.32f, 0f), new Vector3(0.4f, 0.64f, 3.2f), trackMat).layer = tankLayer;
+        MakePart(PrimitiveType.Cube, "Track_Right", root.transform, new Vector3(1.1f, 0.32f, 0f), new Vector3(0.4f, 0.64f, 3.2f), trackMat).layer = tankLayer;
+
         GameObject turretPivot = new GameObject("TurretPivot");
         turretPivot.transform.SetParent(root.transform, false);
         turretPivot.transform.localPosition = new Vector3(0f, 0.9f, 0f);
@@ -1203,11 +1208,11 @@ public static class TanksSceneBuilder
 
         // Підказка з керуванням.
         TextMeshProUGUI hint = MakeText(canvasObject.transform, "ControlsHint",
-            "Стрілки — рух   Z/X або миша — башта   ЛКМ — постріл   T — день/захід", 22f, TextAlignmentOptions.Right);
+            "Стрілки/WASD — рух   Z/X або миша — башта   ЛКМ — постріл   1/2/3 — зброя   T — день/захід", 22f, TextAlignmentOptions.Right);
         RectTransform hintRect = hint.rectTransform;
         hintRect.anchorMin = hintRect.anchorMax = hintRect.pivot = new Vector2(1f, 0f);
         hintRect.anchoredPosition = new Vector2(-30f, 30f);
-        hintRect.sizeDelta = new Vector2(1000f, 40f);
+        hintRect.sizeDelta = new Vector2(1300f, 40f);
         hint.color = new Color(1f, 1f, 1f, 0.85f);
 
         // Екрани завершення гри.
