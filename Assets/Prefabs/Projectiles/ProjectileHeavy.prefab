@@ -267,3 +267,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   impactEffectPrefab: {fileID: 1311824851049366167, guid: 4d83be23b396996479e3fba198a91c9d, type: 3}
+  metalImpactEffectPrefab: {fileID: 0}

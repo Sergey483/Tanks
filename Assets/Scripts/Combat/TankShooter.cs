@@ -12,6 +12,11 @@ public class TankShooter : MonoBehaviour
     [SerializeField] private ParticleSystem muzzleFlash;
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip shootClip;
+    [SerializeField] private Vector2 pitchRange = new Vector2(0.95f, 1.05f);
+
+    [Header("Camera Shake (player)")]
+    [SerializeField] private float shakeStrength = 0.15f;
+    [SerializeField] private float shakeDuration = 0.15f;
 
     public TankConfig Config => config;
 
@@ -73,9 +78,22 @@ public class TankShooter : MonoBehaviour
             muzzleFlash.Play();
 
         if (audioSource != null && shootClip != null)
+        {
+            audioSource.pitch = Random.Range(pitchRange.x, pitchRange.y);
             audioSource.PlayOneShot(shootClip);
+        }
+
+        if (usePlayerInput)
+            ShakeCamera();
 
         nextFireTime = Time.time + config.fireCooldown;
         return true;
+    }
+
+    private void ShakeCamera()
+    {
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null && mainCamera.TryGetComponent(out CameraShake shake))
+            shake.Shake(shakeStrength * config.projectileScale, shakeDuration);
     }
 }
