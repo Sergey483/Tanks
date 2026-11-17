@@ -12,8 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d8502b53c4b9a48bb05ebf1aa55b18, type: 3}
   m_Name: RapidTankConfig
   m_EditorClassIdentifier: 
+  weaponName: "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u0440\u0456\u043B\u044C\u043D\u0430
+    \u0433\u0430\u0440\u043C\u0430\u0442\u0430"
   damage: 10
   projectileSpeed: 24
   fireCooldown: 0.25
   projectileLifetime: 4
   projectilePrefab: {fileID: 5661220375981530653, guid: 369b1da51dba1e14eb309ff1332da5d3, type: 3}
+  projectileScale: 0.7
+  maxActiveProjectiles: 4

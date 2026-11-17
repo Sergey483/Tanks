@@ -7,6 +7,8 @@ using UnityEngine;
 public class TankConfig : ScriptableObject
 {
     [Header("Weapon")]
+    public string weaponName = "Гармата";
+
     [Min(1)]
     public int damage = 25;
 
@@ -20,4 +22,12 @@ public class TankConfig : ScriptableObject
     public float projectileLifetime = 5f;
 
     public Projectile projectilePrefab;
+
+    [Header("Projectile")]
+    [Min(0.1f)]
+    public float projectileScale = 1f;
+
+    // 0 — без обмеження.
+    [Min(0)]
+    public int maxActiveProjectiles = 0;
 }

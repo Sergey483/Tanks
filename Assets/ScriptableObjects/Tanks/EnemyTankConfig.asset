@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d8502b53c4b9a48bb05ebf1aa55b18, type: 3}
   m_Name: EnemyTankConfig
   m_EditorClassIdentifier: 
+  weaponName: "\u0412\u043E\u0440\u043E\u0436\u0430 \u0433\u0430\u0440\u043C\u0430\u0442\u0430"
   damage: 10
   projectileSpeed: 16
   fireCooldown: 1.2
   projectileLifetime: 5
   projectilePrefab: {fileID: 5661220375981530653, guid: 369b1da51dba1e14eb309ff1332da5d3, type: 3}
+  projectileScale: 1
+  maxActiveProjectiles: 0
