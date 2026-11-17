@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 1732275988462617474}
   - component: {fileID: 4414925655212580922}
   - component: {fileID: 3948148991017958686}
+  - component: {fileID: 790918317749912512}
   m_Layer: 7
   m_Name: PlayerTank
   m_TagString: Player
@@ -289,6 +290,22 @@ MonoBehaviour:
   idlePitch: 0.8
   movingPitch: 1.25
   changeSpeed: 4
+--- !u!114 &790918317749912512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2107450576137575063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2591051ff38343e4bbc4326773ffdb84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weapons:
+  - {fileID: 11400000, guid: 071da673b4e25934f9f429b372fa910f, type: 2}
+  - {fileID: 11400000, guid: c58b35f99ac681746965c5544847d8e3, type: 2}
+  - {fileID: 11400000, guid: 9e1d0defdbcce674b9ddf62f3946aa60, type: 2}
 --- !u!1 &4257895496217292243
 GameObject:
   m_ObjectHideFlags: 0

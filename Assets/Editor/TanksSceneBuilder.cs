@@ -161,19 +161,28 @@ public static class TanksSceneBuilder
             "TankExplosion", particleMat, explosionClip, 3f,
             new Color(1f, 0.45f, 0.1f), 40, 60, 4f, 10f, 0.6f, 1.6f, 0.8f);
 
-        Projectile projectilePrefab = MakeProjectilePrefab(projectileMat, trailMat, impactPrefab);
+        Material heavyProjectileMat = MakeMaterial("ProjectileHeavy", new Color(1f, 0.35f, 0.15f), 0.5f);
+        heavyProjectileMat.EnableKeyword("_EMISSION");
+        heavyProjectileMat.SetColor("_EmissionColor", new Color(1f, 0.25f, 0.05f) * 3f);
 
-        TankConfig playerConfig = MakeConfig("PlayerTankConfig", 25, 18f, 0.7f, 5f, projectilePrefab);
-        MakeConfig("RapidTankConfig", 10, 24f, 0.25f, 4f, projectilePrefab);
-        TankConfig enemyConfig = MakeConfig("EnemyTankConfig", 10, 16f, 1.2f, 5f, projectilePrefab);
+        // Дві візуально різні кулі: звичайна жовта та важка червона з великим вибухом.
+        Projectile projectilePrefab = MakeProjectilePrefab("Projectile", projectileMat, trailMat, impactPrefab,
+            new Color(1f, 0.95f, 0.3f), new Color(1f, 0.5f, 0.1f), 0.12f);
+        Projectile heavyProjectilePrefab = MakeProjectilePrefab("ProjectileHeavy", heavyProjectileMat, trailMat, explosionPrefab,
+            new Color(1f, 0.45f, 0.2f), new Color(0.6f, 0.1f, 0.05f), 0.3f);
+
+        TankConfig playerConfig = MakeConfig("PlayerTankConfig", "Стандартна гармата", 25, 18f, 0.7f, 5f, projectilePrefab, 1f, 0);
+        TankConfig rapidConfig = MakeConfig("RapidTankConfig", "Скорострільна гармата", 10, 24f, 0.25f, 4f, projectilePrefab, 0.7f, 4);
+        TankConfig heavyConfig = MakeConfig("HeavyTankConfig", "Важка гармата", 50, 14f, 1.6f, 5f, heavyProjectilePrefab, 1.6f, 1);
+        TankConfig enemyConfig = MakeConfig("EnemyTankConfig", "Ворожа гармата", 10, 16f, 1.2f, 5f, projectilePrefab, 1f, 0);
 
         GameObject playerPrefab = MakeTankPrefab(
             "PlayerTank", false, playerMat, playerTurretMat, particleMat, shootClip, engineClip,
-            playerConfig, explosionPrefab.gameObject, tankLayer);
+            playerConfig, explosionPrefab.gameObject, tankLayer, new[] { playerConfig, rapidConfig, heavyConfig });
 
         GameObject enemyPrefab = MakeTankPrefab(
             "EnemyTank", true, enemyMat, enemyTurretMat, particleMat, shootClip, null,
-            enemyConfig, explosionPrefab.gameObject, tankLayer);
+            enemyConfig, explosionPrefab.gameObject, tankLayer, null);
 
         GameObject pickupPrefab = MakeRepairPickupPrefab(pickupMat);
 
@@ -434,6 +443,67 @@ public static class TanksSceneBuilder
         Debug.Log("[TanksSceneBuilder] OOP scene built: " + OopScenePath);
     }
 
+    // Тир для перевірки зброї (ДЗ 72–73): гравець, мішені та перемикання конфігів 1/2/3.
+    [MenuItem("Tanks/4b. Build Test Range Scene")]
+    public static void BuildTestRange()
+    {
+        GameObject playerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Tanks/PlayerTank.prefab");
+        Material groundMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Ground.mat");
+        Material wallMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Wall.mat");
+        Material targetMat = MakeMaterial("Target", Color.white, 0.3f);
+
+        Scene scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+
+        GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        ground.name = "Ground";
+        ground.transform.localScale = new Vector3(4f, 1f, 4f);
+        ground.layer = LayerMask.NameToLayer("Ground");
+        ground.GetComponent<Renderer>().sharedMaterial = groundMat;
+
+        Transform walls = new GameObject("Walls").transform;
+        MakeBlock(walls, "Wall_North", new Vector3(0f, 1.5f, 20.5f), new Vector3(42f, 3f, 1f), wallMat);
+        MakeBlock(walls, "Wall_South", new Vector3(0f, 1.5f, -20.5f), new Vector3(42f, 3f, 1f), wallMat);
+        MakeBlock(walls, "Wall_East", new Vector3(20.5f, 1.5f, 0f), new Vector3(1f, 3f, 42f), wallMat);
+        MakeBlock(walls, "Wall_West", new Vector3(-20.5f, 1.5f, 0f), new Vector3(1f, 3f, 42f), wallMat);
+
+        Transform targets = new GameObject("Targets").transform;
+        Vector3[] positions =
+        {
+            new Vector3(-10f, 0f, 6f), new Vector3(-5f, 0f, 10f), new Vector3(0f, 0f, 14f),
+            new Vector3(5f, 0f, 10f), new Vector3(10f, 0f, 6f), new Vector3(0f, 0f, 6f)
+        };
+        for (int i = 0; i < positions.Length; i++)
+        {
+            GameObject target = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            target.name = "Target_" + (i + 1).ToString("00");
+            target.transform.SetParent(targets, false);
+            target.transform.position = positions[i] + Vector3.up;
+            target.transform.localScale = new Vector3(1.5f, 2f, 1.5f);
+            target.GetComponent<Renderer>().sharedMaterial = targetMat;
+            target.AddComponent<TestTarget>();
+        }
+
+        GameObject player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
+        player.transform.SetPositionAndRotation(new Vector3(0f, 0.05f, -12f), Quaternion.identity);
+
+        Light sun = UnityEngine.Object.FindFirstObjectByType<Light>();
+        sun.transform.rotation = Quaternion.Euler(50f, -35f, 0f);
+        sun.shadows = LightShadows.Soft;
+
+        GameObject volumeObject = new GameObject("Global Volume");
+        Volume volume = volumeObject.AddComponent<Volume>();
+        volume.isGlobal = true;
+        volume.sharedProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(SettingsFolder + "/DayVolumeProfile.asset");
+
+        Camera camera = Camera.main;
+        camera.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+        CameraFollow follow = camera.gameObject.AddComponent<CameraFollow>();
+        SetField(follow, "target", player.transform);
+
+        EditorSceneManager.SaveScene(scene, "Assets/Scenes/TestRange.unity");
+        Debug.Log("[TanksSceneBuilder] Test range built");
+    }
+
     [MenuItem("Tanks/5. Build Windows Player")]
     public static void BuildWindows()
     {
@@ -456,7 +526,7 @@ public static class TanksSceneBuilder
 
     private static GameObject MakeTankPrefab(
         string name, bool isEnemy, Material bodyMat, Material turretMat, Material particleMat,
-        AudioClip shootClip, AudioClip engineClip, TankConfig config, GameObject explosionPrefab, int tankLayer)
+        AudioClip shootClip, AudioClip engineClip, TankConfig config, GameObject explosionPrefab, int tankLayer, TankConfig[] weapons)
     {
         GameObject root = new GameObject(name);
         root.layer = tankLayer;
@@ -559,6 +629,12 @@ public static class TanksSceneBuilder
 
             TankEngineAudio engineAudio = root.AddComponent<TankEngineAudio>();
             SetField(engineAudio, "engineSource", engineSource);
+
+            if (weapons != null)
+            {
+                WeaponSwitcher switcher = root.AddComponent<WeaponSwitcher>();
+                SetObjectArray(switcher, "weapons", weapons);
+            }
         }
 
         return SavePrefab(root, "Assets/Prefabs/Tanks/" + name + ".prefab");
@@ -945,10 +1021,11 @@ public static class TanksSceneBuilder
 
     // ---------- Projectile & VFX ----------
 
-    private static Projectile MakeProjectilePrefab(Material material, Material trailMat, ImpactEffect impactPrefab)
+    private static Projectile MakeProjectilePrefab(string name, Material material, Material trailMat, ImpactEffect impactPrefab,
+        Color trailStart, Color trailEnd, float trailWidth)
     {
         GameObject shell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        shell.name = "Projectile";
+        shell.name = name;
         shell.transform.localScale = Vector3.one * 0.3f;
         shell.GetComponent<Renderer>().sharedMaterial = material;
         shell.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
@@ -961,7 +1038,7 @@ public static class TanksSceneBuilder
         TrailRenderer trail = shell.AddComponent<TrailRenderer>();
         trail.time = 0.18f;
         trail.minVertexDistance = 0.05f;
-        trail.widthCurve = AnimationCurve.Linear(0f, 0.12f, 1f, 0f);
+        trail.widthCurve = AnimationCurve.Linear(0f, trailWidth, 1f, 0f);
         trail.widthMultiplier = 1f;
         trail.alignment = LineAlignment.View;
         trail.textureMode = LineTextureMode.Stretch;
@@ -970,14 +1047,14 @@ public static class TanksSceneBuilder
         trail.sharedMaterial = trailMat;
         Gradient trailGradient = new Gradient();
         trailGradient.SetKeys(
-            new[] { new GradientColorKey(new Color(1f, 0.95f, 0.3f), 0f), new GradientColorKey(new Color(1f, 0.5f, 0.1f), 1f) },
+            new[] { new GradientColorKey(trailStart, 0f), new GradientColorKey(trailEnd, 1f) },
             new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) });
         trail.colorGradient = trailGradient;
 
         Projectile projectile = shell.AddComponent<Projectile>();
         SetField(projectile, "impactEffectPrefab", impactPrefab);
 
-        return SavePrefab(shell, "Assets/Prefabs/Projectiles/Projectile.prefab").GetComponent<Projectile>();
+        return SavePrefab(shell, "Assets/Prefabs/Projectiles/" + name + ".prefab").GetComponent<Projectile>();
     }
 
     private static ImpactEffect MakeEffectPrefab(
@@ -1281,7 +1358,8 @@ public static class TanksSceneBuilder
 
     // ---------- Assets ----------
 
-    private static TankConfig MakeConfig(string name, int damage, float speed, float cooldown, float lifetime, Projectile projectile)
+    private static TankConfig MakeConfig(string name, string weaponName, int damage, float speed, float cooldown, float lifetime,
+        Projectile projectile, float projectileScale, int maxActiveProjectiles)
     {
         string path = "Assets/ScriptableObjects/Tanks/" + name + ".asset";
         TankConfig config = AssetDatabase.LoadAssetAtPath<TankConfig>(path);
@@ -1296,6 +1374,9 @@ public static class TanksSceneBuilder
         config.fireCooldown = cooldown;
         config.projectileLifetime = lifetime;
         config.projectilePrefab = projectile;
+        config.weaponName = weaponName;
+        config.projectileScale = projectileScale;
+        config.maxActiveProjectiles = maxActiveProjectiles;
         EditorUtility.SetDirty(config);
         return config;
     }
