@@ -17,7 +17,15 @@
 
 ## Що реалізовано
 
-- **Уроки 71–74:** Player Controller на Rigidbody, камера за баштою, бойова система через `TankConfig` (ScriptableObject), снаряди, Muzzle Flash, Trail, ефекти влучання, звуки, ворожий AI на NavMesh (Patrol → Chase → Attack).
+- **Урок 71:** Player Controller на Rigidbody (MovePosition/MoveRotation), камера за баштою, Prefab `PlayerTank`, арена з перешкодами та стінами по краях.
+  - ⭐ дві візуальні гусениці, швидкість назад — 60% від швидкості вперед, повідомлення «Танк почав рух / зупинився», керування також на W/A/S/D.
+- **Урок 72:** бойова система через `TankConfig` (ScriptableObject), снаряд, `TankShooter` з cooldown, тир `Assets/Scenes/TestRange.unity` з 6 мішенями.
+  - дві візуально різні кулі (`Projectile`, `ProjectileHeavy`);
+  - ⭐ третій конфіг `HeavyTankConfig`, обмеження активних снарядів (`maxActiveProjectiles`), різний масштаб снаряда (`projectileScale`), мішені змінюють колір після влучання, перемикання зброї клавішами 1/2/3.
+- **Урок 73:** Muzzle Flash, Trail, `ImpactEffect` зі звуком, loop двигуна, VFX самі видаляються.
+  - ⭐ різні ефекти для ґрунту й металу (`ImpactSurface`: іскри та дзвін для металу), випадковий pitch пострілу 0.95–1.05, великий вибух для важкого снаряда, поштовх камери під час пострілу (`CameraShake`).
+- **Урок 74:** ворожий AI на NavMesh: Patrol → Chase → Attack, наведення башти з `shootAngle`, повернення до патруля.
+  - ⭐ випадкове очікування на патрульній точці, перевірка видимості через Raycast, вороги з різними швидкостями/дистанціями/зброєю (`EnemyTank_Fast_West`, `EnemyTank_Heavy_East`), колір Gizmos за поточним станом (зелений / жовтий / червоний).
 - **Урок 75:** `IDamageable`, `TankHealth` з подіями, `TankDeath` з вибухом, HUD здоров'я та World Space смуги ворогів.
 - **Урок 76 — левел-дизайн і URP:**
   - арена 50 × 50 з центральним і двома бічними маршрутами, головний орієнтир — радіовежа з маячком;
